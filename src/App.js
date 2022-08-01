@@ -10,6 +10,7 @@ import {usePosts} from "./hooks/usePosts";
 import axios from "axios";
 import PostService from "./API/PostService";
 import Loader from "./components/UI/loader/Loader";
+import {useFetching} from "./hooks/useFetching";
 
 function App() {
 
@@ -17,7 +18,11 @@ function App() {
     const [filter, setFilter] = useState({sort:'', query: ''});
     const [modal, setModal] = useState(false);
     const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
-    const [isPostsLoading, setIsPostsLoading] = useState(false);
+
+    const [fetchPosts, isPostsLoading, postError] = useFetching( async () => {
+        const posts = await PostService.getAll();
+        setPosts(posts)
+    })
 
     useEffect(() => {
         fetchPosts()
@@ -27,16 +32,7 @@ function App() {
         setPosts([...posts, newPost])
         setModal(false)
     }
-    
-    async function fetchPosts() {
-        setIsPostsLoading(true);
-        setTimeout(async () => {
-            const posts = await PostService.getAll();
-            setPosts(posts)
-            setIsPostsLoading(false);
-        }, 2000)
 
-    }
 
     const removePost = (post) => {
         setPosts(posts.filter(p => p.id !== post.id))
@@ -44,6 +40,7 @@ function App() {
 
     return (
     <div className="App">
+
         <MyButton style={{marginRight:10}} onClick={fetchPosts}>GET POSTS</MyButton>
         <MyButton style={{marginTop: 30}} onClick={() => setModal(true)}>
             Create Post
@@ -52,7 +49,6 @@ function App() {
             <PostForm create={createPost}/>
         </MyModal>
 
-
         <hr style={{margin: '15px 0'}}/>
 
         <PostFilter
@@ -60,10 +56,15 @@ function App() {
             setFilter={setFilter}
         />
 
+        {postError &&
+            <h1>Error ${postError}</h1>
+        }
+
         {isPostsLoading
             ?<div style={{display: 'flex', justifyContent: 'center',marginTop: 50}}><Loader/></div>
             :<PostList remove={removePost} posts={sortedAndSearchedPosts} title={'JS List'}/>
         }
+
     </div>
   );
 }
