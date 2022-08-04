@@ -1,4 +1,4 @@
-import React, {useEffect,useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import'../styles/app.css'
 import PostList from "../components/PostList";
 import PostForm from "../components/PostForm";
@@ -11,6 +11,8 @@ import Loader from "../components/UI/loader/Loader";
 import {useFetching} from "../hooks/useFetching";
 import {getPageCount} from "../utils/pages";
 import Pagination from "../components/UI/pagination/Pagination";
+import {useObserver} from "../hooks/useObserver";
+import MySelect from "../components/UI/select/MySelect";
 
 function Posts() {
 
@@ -21,20 +23,22 @@ function Posts() {
     const [limit, setLimit] = useState(10);
     const [page, setPage] = useState(1);
     const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
-
+    const lastElement = useRef();
 
     const [fetchPosts, isPostsLoading, postError] = useFetching( async (limit, page) => {
         const response = await PostService.getAll(limit, page);
-        setPosts(response.data)
+        setPosts([...posts,...response.data])
         const totalCount = response.headers['x-total-count']
         setTotalPages(getPageCount(totalCount, limit));
     })
 
-    console.log(totalPages)
+    useObserver(lastElement, page < totalPages, isPostsLoading, () => {
+        setPage(page + 1);
+    })
 
     useEffect(() => {
         fetchPosts(limit, page)
-    },[page])
+    },[page, limit])
 
     const createPost = (newPost) => {
         setPosts([...posts, newPost])
@@ -47,13 +51,12 @@ function Posts() {
 
     const changePage = (page) => {
         setPage(page)
-        fetchPosts(limit, page)
     }
 
     return (
         <div className="App">
 
-            <MyButton style={{marginRight:10}} onClick={fetchPosts}>GET POSTS</MyButton>
+            {/*<MyButton style={{marginRight:10}} onClick={fetchPosts}>GET POSTS</MyButton>*/}
             <MyButton style={{marginTop: 30}} onClick={() => setModal(true)}>
                 Create Post
             </MyButton>
@@ -67,15 +70,30 @@ function Posts() {
                 filter={filter}
                 setFilter={setFilter}
             />
+            <MySelect
+                value={limit}
+                onChange={value => setLimit(value)}
+                defaultValue="Number of items per page"
+                options={[
+                    {value: 5,name: '5'},
+                    {value: 10,name: '10'},
+                    {value: 25,name: '25'},
+                    {value: -1,name: 'Show all'},
+                ]}
+            />
 
             {postError &&
                 <h1>Error ${postError}</h1>
             }
 
-            {isPostsLoading
-                ?<div style={{display: 'flex', justifyContent: 'center',marginTop: 50}}><Loader/></div>
-                :<PostList remove={removePost} posts={sortedAndSearchedPosts} title={'JS List'}/>
+            <PostList remove={removePost} posts={sortedAndSearchedPosts} title={'JS List'}/>
+
+            <div ref={lastElement} style={{height:20, background:'red'}}></div>
+
+            {isPostsLoading &&
+                <div style={{display: 'flex', justifyContent: 'center', marginTop: 50}}><Loader/></div>
             }
+
             <Pagination
                 page={page}
                 changePage={changePage}

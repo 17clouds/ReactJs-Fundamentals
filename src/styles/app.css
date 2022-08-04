@@ -6,7 +6,8 @@
 
 #root {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
 }
 
 .App {
@@ -21,7 +22,9 @@
     justify-content: space-between;
     align-content: center;
 }
-
+.post__btns {
+    display: flex;
+}
 .post-enter {
     transform: translateX(-350px);
 }
@@ -51,4 +54,18 @@
 .page__current {
     border: 2px solid coral;
     font-weight: bold;
+}
+
+.navbar {
+    height: 50px;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    background: aquamarine;
+}
+.navbar__links a {
+    padding: 5px;
+    /*margin-left: auto;*/
 }

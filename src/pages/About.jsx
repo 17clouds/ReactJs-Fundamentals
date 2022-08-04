@@ -2,7 +2,9 @@ import React from 'react';
 
 const About = () => {
     return (
-        <div>This project was created for education purposes</div>
+        <div>
+            This project was created for education purposes
+        </div>
     );
 };
 
