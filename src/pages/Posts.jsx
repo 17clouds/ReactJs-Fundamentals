@@ -88,7 +88,7 @@ function Posts() {
 
             <PostList remove={removePost} posts={sortedAndSearchedPosts} title={'JS List'}/>
 
-            <div ref={lastElement} style={{height:20, background:'red'}}></div>
+            <div ref={lastElement} style={{height:20}}></div>
 
             {isPostsLoading &&
                 <div style={{display: 'flex', justifyContent: 'center', marginTop: 50}}><Loader/></div>
